@@ -1,3 +1,5 @@
+# https://gist.github.com/tstellanova/11ef60480552e2c5660af8e9e14410c8
+
 import sqlite3
 from flask import Flask, render_template, send_from_directory, jsonify
 import os
@@ -59,7 +61,7 @@ def record_audio():
     sample_format = 'int16'
     channels = 1
     fs = 22050
-    threshold = 1000
+    threshold = 100
     record_time = 5  # Duration to record after detecting noise
 
     frames = []

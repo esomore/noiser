@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Noise Recorder</title>
+    <style>
+      /* ... existing CSS ... */
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <h1>Recorded Noises</h1>
+    <input type="date" id="datePicker" onchange="updateTableAndChart()" />
+    <canvas id="chart"></canvas>
+    <table id="recordingsTable">
+      <thead>
+        <tr>
+          <th>Date and Time</th>
+          <th>Recording</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      document.getElementById("datePicker").valueAsDate = new Date();
+      function updateTableAndChart() {
+        var date = document.getElementById("datePicker").value;
+        $.get("/recordings", function (data) {
+          var table = document.getElementById("recordingsTable");
+          var tbody = table.getElementsByTagName("tbody")[0];
+          tbody.innerHTML = "";
+
+          // Initialize the recordingsPerHour object starting from 6 AM
+          var recordingsPerHour = {};
+          for (var i = 6; i < 30; i++) {
+            var hour = (i % 24).toString().padStart(2, "0");
+            recordingsPerHour[hour] = 0;
+          }
+
+          data.forEach(function (recording) {
+            if (recording.date === date) {
+              var row = tbody.insertRow();
+              var cell1 = row.insertCell(0);
+              var cell2 = row.insertCell(1);
+              cell1.innerHTML = recording.date + " " + recording.time;
+              cell2.innerHTML =
+                '<audio controls><source src="' +
+                recording.filename +
+                '" type="audio/wav"></audio>';
+
+              // Increment the count for the corresponding hour
+              var hour = recording.time.split(":")[0];
+              if (recordingsPerHour.hasOwnProperty(hour)) {
+                recordingsPerHour[hour]++;
+              }
+            }
+          });
+
+          // Update the chart here
+          var ctx = document.getElementById("chart").getContext("2d");
+          var chart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: Object.keys(recordingsPerHour),
+              datasets: [
+                {
+                  label: "Number of recordings",
+                  data: Object.values(recordingsPerHour),
+                  backgroundColor: "rgba(75, 192, 192, 0.2)",
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  beginAtZero: true,
+                },
+                y: {
+                  beginAtZero: true,
+                },
+              },
+            },
+          });
+        });
+      }
+
+      updateTableAndChart();
+    </script>
+  </body>
+</html>

@@ -92,7 +92,7 @@ def record_audio():
 
     while True:
         data = stream.read(chunk)
-        data = np.fromstring(data, 'Int16')
+        data = np.fromstring(data, dtype=np.int16)
         data = butter_lowpass_filter(data, cutoff, fs)
         rms = audioop.rms(data, 2)
 

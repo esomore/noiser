@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Create a new user
+sudo useradd -m -s /bin/bash noiser
+
 # Update system packages
 sudo apt-get update
 
@@ -10,12 +13,11 @@ sudo apt-get install -y python3 python3-pip
 pip3 install virtualenv
 
 # Create a virtual environment and activate it
-cd /home/ubuntu/noiser
-virtualenv venv
-source venv/bin/activate
+cd /home/noiser/noiser
+sudo -u noiser virtualenv venv
 
 # Install the required Python packages
-pip install flask sounddevice numpy
+sudo -u noiser venv/bin/pip install flask sounddevice numpy
 
 # Create a systemd service file for the Flask application
 echo "[Unit]
@@ -23,16 +25,19 @@ Description=Noiser Service
 After=network.target
 
 [Service]
-User=ubuntu
-WorkingDirectory=/home/ubuntu/noiser
+User=noiser
+WorkingDirectory=/home/noiser/noiser
 Environment='FLASK_APP=noiser.py'
 Environment='FLASK_RUN_HOST=0.0.0.0'
 Environment='FLASK_RUN_PORT=5000'
-ExecStart=/home/ubuntu/noiser/venv/bin/flask run
+ExecStart=/home/noiser/noiser/venv/bin/flask run
 Restart=always
 
 [Install]
 WantedBy=multi-user.target" | sudo tee /etc/systemd/system/noiser.service
+
+# Set permissions for the noiser directory
+sudo chown -R noiser:noiser /home/noiser/noiser
 
 # Enable and start the service
 sudo systemctl enable noiser

@@ -73,9 +73,9 @@ def record_audio():
     chunk = 2048
     sample_format = pyaudio.paInt16
     channels = 1
-    fs = 44100
+    fs = 22050
     cutoff = 60  # Desired cutoff frequency of the filter, Hz
-    threshold = 1000
+    threshold = 500
     record_time = 10
 
     p = pyaudio.PyAudio()
@@ -92,7 +92,8 @@ def record_audio():
 
     while True:
         data = stream.read(chunk)
-        data = np.fromstring(data, dtype=np.int16)
+        data = np.frombuffer(data, dtype=np.int16)
+        ...
         data = butter_lowpass_filter(data, cutoff, fs)
         rms = audioop.rms(data, 2)
 

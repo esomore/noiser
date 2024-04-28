@@ -17,7 +17,7 @@ cd /home/noiser/noiser
 sudo -u noiser virtualenv venv
 
 # Install the required Python packages
-sudo -u noiser venv/bin/pip install flask sounddevice numpy
+sudo -u noiser venv/bin/pip install flask pyaudio wave audioop
 
 # Create a systemd service file for the Flask application
 echo "[Unit]
@@ -29,7 +29,7 @@ User=noiser
 WorkingDirectory=/home/noiser/noiser
 Environment='FLASK_APP=noiser.py'
 Environment='FLASK_RUN_HOST=0.0.0.0'
-Environment='FLASK_RUN_PORT=5000'
+Environment='FLASK_RUN_PORT=8080'
 ExecStart=/home/noiser/noiser/venv/bin/flask run
 Restart=always
 

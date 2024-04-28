@@ -9,7 +9,6 @@ from datetime import datetime
 from flask import send_file
 import time
 from scipy.signal import butter, lfilter
-import numpy as np
 
 app = Flask(__name__)
 
@@ -57,26 +56,13 @@ def get_recordings():
     conn.close()  # Close the connection when you're done with it
     return jsonify(recordings)
 
-
-def butter_lowpass(cutoff, fs, order=5):
-    nyq = 0.5 * fs
-    normal_cutoff = cutoff / nyq
-    b, a = butter(order, normal_cutoff, btype='low', analog=False)
-    return b, a
-
-def butter_lowpass_filter(data, cutoff, fs, order=5):
-    b, a = butter_lowpass(cutoff, fs, order=order)
-    y = lfilter(b, a, data)
-    return y
-
 def record_audio():
     chunk = 2048
     sample_format = pyaudio.paInt16
-    channels = 1
+    channels = 1  # Change this to 1
     fs = 22050
-    cutoff = 60  # Desired cutoff frequency of the filter, Hz
-    threshold = 500
-    record_time = 10
+    threshold = 50
+    record_time = 10  # Duration to record after detecting noise
 
     p = pyaudio.PyAudio()
 
@@ -92,9 +78,6 @@ def record_audio():
 
     while True:
         data = stream.read(chunk)
-        data = np.frombuffer(data, dtype=np.int16)
-        ...
-        data = butter_lowpass_filter(data, cutoff, fs)
         rms = audioop.rms(data, 2)
 
         if not recording and rms > threshold:
@@ -102,7 +85,7 @@ def record_audio():
             recording = True
             start_time = time.time()
             frames.append(data)
-            print('Noise detected')
+            print('Noise detected')  # Print a message when a noise is detected
         elif recording:
             if time.time() - start_time < record_time:
                 frames.append(data)

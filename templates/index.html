@@ -23,7 +23,9 @@
     </table>
 
     <script>
-      document.getElementById("datePicker").valueAsDate = new Date();
+      var date = new Date();
+      document.getElementById("datePicker").value =
+        date.toLocaleDateString("en-CA");
       function updateTableAndChart() {
         var date = document.getElementById("datePicker").value;
         $.get("/recordings", function (data) {

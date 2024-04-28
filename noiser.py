@@ -73,9 +73,9 @@ def record_audio():
     chunk = 2048
     sample_format = pyaudio.paInt16
     channels = 1
-    fs = 22050
+    fs = 44100
     cutoff = 60  # Desired cutoff frequency of the filter, Hz
-    threshold = 500
+    threshold = 1000
     record_time = 10
 
     p = pyaudio.PyAudio()

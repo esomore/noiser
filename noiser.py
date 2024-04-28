@@ -1,12 +1,9 @@
-# https://gist.github.com/tstellanova/11ef60480552e2c5660af8e9e14410c8
-
 import sqlite3
 from flask import Flask, render_template, send_from_directory, jsonify
 import os
-import sounddevice as sd
-import numpy as np
-import time
+import pyaudio
 import wave
+import audioop
 from threading import Thread
 from datetime import datetime
 from flask import send_file
@@ -58,33 +55,49 @@ def get_recordings():
     return jsonify(recordings)
 
 def record_audio():
-    sample_format = 'int16'
-    channels = 1
+    chunk = 2048
+    sample_format = pyaudio.paInt16
+    channels = 1  # Change this to 1
     fs = 22050
-    threshold = 100
-    record_time = 5  # Duration to record after detecting noise
+    threshold = 50
+    record_time = 10  # Duration to record after detecting noise
+
+    p = pyaudio.PyAudio()
+
+    stream = p.open(format=sample_format,
+                    channels=channels,
+                    rate=fs,
+                    frames_per_buffer=chunk,
+                    input=True)
 
     frames = []
     recording = False
     start_time = None
 
-    def callback(indata, frames, time, status):
-        nonlocal recording, start_time
-        volume_norm = np.linalg.norm(indata) * 10
-        if not recording and volume_norm > threshold:
+    while True:
+        data = stream.read(chunk)
+        rms = audioop.rms(data, 2)
+
+        if not recording and rms > threshold:
             print('Recording started')
             recording = True
             start_time = time.time()
-        if recording:
-            frames.append(indata.copy())
+            frames.append(data)
+            print('Noise detected')  # Print a message when a noise is detected
+        elif recording:
+            if time.time() - start_time < record_time:
+                frames.append(data)
+            else:
+                print('Recording stopped')
+                recording = False
+                save_to_file(frames, p.get_sample_size(sample_format), channels, fs)
+                frames = []
+                start_time = None
 
-    with sd.InputStream(callback=callback, channels=channels, samplerate=fs, dtype=sample_format):
-        while True:
-            if recording and (time.time() - start_time) >= record_time:
-                break
-            sd.sleep(100)
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
 
-    return np.concatenate(frames, axis=0)
 def save_to_file(frames, sample_size, channels, rate):
     # Get the current date and time
     now = datetime.now()

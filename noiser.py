@@ -8,7 +8,6 @@ from threading import Thread
 from datetime import datetime
 from flask import send_file
 import time
-from scipy.signal import butter, lfilter
 
 app = Flask(__name__)
 

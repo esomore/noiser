@@ -66,7 +66,7 @@ def record_audio():
     p = pyaudio.PyAudio()
 
     stream = p.open(format=sample_format,
-                    input_device_index=2,
+                    input_device_index=1,
                     channels=channels,
                     rate=fs,
                     frames_per_buffer=chunk,

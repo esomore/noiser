@@ -60,8 +60,8 @@ def record_audio():
     sample_format = pyaudio.paInt16
     channels = 1  # Change this to 1
     fs = 22050
-    threshold = 50
-    record_time = 10  # Duration to record after detecting noise
+    threshold = 500
+    record_time = 5  # Duration to record after detecting noise
 
     p = pyaudio.PyAudio()
 
